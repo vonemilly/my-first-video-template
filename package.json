@@ -1,19 +1,21 @@
 {
   "name": "my-first-video-template",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
-    "render": "remotion render src/index.ts PromoVideo out/video.mp4"
+    "render": "remotion render src/index.ts SourceVideoMotionGraphics out/final-video.mp4",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@remotion/cli": "latest",
-    "remotion": "latest",
-    "react": "latest",
-    "react-dom": "latest"
+    "@remotion/cli": "4.0.512",
+    "@remotion/media": "4.0.512",
+    "remotion": "4.0.512",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "typescript": "latest"
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "typescript": "5.7.2"
   }
 }
