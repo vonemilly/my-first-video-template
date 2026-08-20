@@ -1,0 +1,83 @@
+name: Render diploma scene
+
+on:
+  workflow_dispatch:
+    inputs:
+      calloutText:
+        description: "Handwritten callout text"
+        required: true
+        default: "Promise to Mom"
+
+      backgroundColor:
+        description: "Background color in hex format"
+        required: true
+        default: "#78B7E8"
+
+      ribbonColor:
+        description: "Ribbon color in hex format"
+        required: true
+        default: "#C6283D"
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check project
+        run: npm run typecheck
+
+      - name: Write scene props
+        env:
+          CALLOUT_TEXT: ${{ inputs.calloutText }}
+          BACKGROUND_COLOR: ${{ inputs.backgroundColor }}
+          RIBBON_COLOR: ${{ inputs.ribbonColor }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+
+          values = {
+              "calloutText": os.environ["CALLOUT_TEXT"],
+              "backgroundColor": os.environ["BACKGROUND_COLOR"],
+              "ribbonColor": os.environ["RIBBON_COLOR"],
+          }
+
+          for key in ("backgroundColor", "ribbonColor"):
+              if not re.fullmatch(r"#[0-9A-Fa-f]{6}", values[key]):
+                  raise SystemExit(
+                      f"{key} must be a six-digit hex color, such as #78B7E8"
+                  )
+
+          with open("diploma-props.json", "w", encoding="utf-8") as f:
+              json.dump(values, f, ensure_ascii=False)
+          PY
+
+      - name: Render diploma scene
+        run: |
+          npx remotion render src/index.ts DiplomaScene out/diploma-scene.mp4 \
+            --props=diploma-props.json \
+            --codec=h264 \
+            --crf=18
+
+      - name: Upload diploma scene
+        uses: actions/upload-artifact@v4
+        with:
+          name: diploma-motion-graphics
+          path: out/diploma-scene.mp4
+          retention-days: 7
